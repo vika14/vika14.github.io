@@ -55,20 +55,75 @@
 	var inGameGeneralCompliments = getInGameCompliments(generalCompliments, IN_GAME_GENERAL_COMPLIMENTS_NUMBER);
 	var inGameLookCompliments = getInGameCompliments(lookCompliments, IN_GAME_LOOK_COMPLIMENTS_NUMBER);
 
+	//Player START
 	const PLAYER_WIDTH = 15;
 	const PLAYER_HEIGHT = 15;
+
+	const PLAYER_SPEED = 2;
 
 	var playerXPosition = canvas.width / 2;
 	var playerYPosition = canvas.height / 2;
 
-	function drawUser() {
+	function drawPlayer() {
 		ctx.beginPath();
 		ctx.arc(playerXPosition, playerYPosition, PLAYER_WIDTH, 0, Math.PI * 2);
 		ctx.fillStyle = "#0095DD";
 		ctx.fill();
 		ctx.closePath();
 	}
+	//Player END
 
+	//Enemy START
+	const ENEMIES_NUMBER = 4;
+	const ENEMY_HEALTH = 3;
+	const ENEMIES_START_POSITIONS = [
+		{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 },
+		{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 },
+		{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 * 3 },
+		{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 * 3 },
+	];
+	const ENEMY_RADIUS = 20;
+
+	function buildEnemies(enemiesNumber) {
+		var enemies = [];
+		for (var enemyPosition = 0; enemyPosition < enemiesNumber; enemyPosition++) {
+			enemies.push({ xPosition: 0, yPosition: 0, health: ENEMY_HEALTH });
+		}
+
+		return enemies;
+	}
+
+	function placeEnemies(enemies) {
+		for (var enemyPosition = 0;
+				 enemyPosition < enemies.length && enemyPosition < ENEMIES_START_POSITIONS.length;
+				 enemyPosition++) {
+			enemies[enemyPosition].xPosition = ENEMIES_START_POSITIONS[enemyPosition].xPosition;
+			enemies[enemyPosition].yPosition = ENEMIES_START_POSITIONS[enemyPosition].yPosition;
+		}
+	}
+
+	function drawEnemy(enemy) {
+		ctx.beginPath();
+		ctx.arc(enemy.xPosition, enemy.yPosition, ENEMY_RADIUS, 0, Math.PI * 2);
+		ctx.fillStyle = "#FF0000";
+		ctx.fill();
+		ctx.closePath();
+	}
+
+	function drawEnemies(enemies) {
+		for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
+			drawEnemy(enemies[enemyPosition]);
+		}
+	}
+
+	var enemies = buildEnemies(ENEMIES_NUMBER);
+	placeEnemies(enemies);
+	//Enemy END
+
+	//Bullet START
+	//Bullet END
+
+	//Controls START
 	var upPressed;
 	var downPressed;
 	var leftPressed;
@@ -123,6 +178,34 @@
 
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
+	//Controls END
+
+	function clearCanvas() {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
+
+	function draw() {
+		clearCanvas();
+		drawPlayer();
+		drawEnemies(enemies);
+
+		if (upPressed) {
+			playerYPosition -= PLAYER_SPEED;
+		}
+		if (downPressed) {
+			playerYPosition += PLAYER_SPEED;
+		}
+		if (leftPressed) {
+			playerXPosition -= PLAYER_SPEED;
+		}
+		if (rightPressed) {
+			playerXPosition += PLAYER_SPEED;
+		}
+
+		requestAnimationFrame(draw);
+	}
+
+	draw();
 </script>
 
 </body>

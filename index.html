@@ -121,6 +121,53 @@
 	//Enemy END
 
 	//Bullet START
+	const BULLET_RADIUS = 5;
+	const BULLET_SPEED = 8;
+
+	var bullets = [];
+
+	function emitBullet(startXPosition, startYPosition) {
+		bullets.push(
+			{ xPosition: startXPosition, yPosition: startYPosition, inPullPosition: bullets.length });
+	}
+
+	function removeNeededBullets(bullets) {
+		for (var bulletPosition = 0; bulletPosition < bullets.length; bulletPosition++) {
+			var bullet = bullets[bulletPosition];
+			if (bullet.xPosition < 0 || bullet.xPosition > canvas.width
+					|| bullet.yPosition < 0 || bullet.yPosition > canvas.height) {
+				removeBullet(bulletPosition);
+			}
+		}
+	}
+
+	function removeBullet(bulletPosition) {
+		bullets.splice(bulletPosition, 1);
+	}
+
+	function moveAllBullets(bullets) {
+		for (var bulletPosition = 0; bulletPosition < bullets.length; bulletPosition++) {
+			moveBullet(bullets[bulletPosition]);
+		}
+	}
+
+	function moveBullet(bullet) {
+		bullet.yPosition -= BULLET_SPEED;
+	}
+
+	function drawAllBullets(bullets) {
+		for (var bulletPosition = 0; bulletPosition < bullets.length; bulletPosition++) {
+			drawBullet(bullets[bulletPosition]);
+		}
+	}
+
+	function drawBullet(bullet) {
+		ctx.beginPath();
+		ctx.arc(bullet.xPosition, bullet.yPosition, BULLET_RADIUS, 0, Math.PI * 2);
+		ctx.fillStyle = "#FF0000";
+		ctx.fill();
+		ctx.closePath();
+	}
 	//Bullet END
 
 	//Controls START
@@ -128,7 +175,6 @@
 	var downPressed;
 	var leftPressed;
 	var rightPressed;
-	var spacePressed;
 
 	const UP_KEY_CODE = 38;
 	const DOWN_KEY_CODE = 40;
@@ -150,9 +196,6 @@
 			case RIGHT_KEY_CODE:
 				rightPressed = true;
 				break;
-			case SPACE_KEY_CODE:
-				spacePressed = true;
-				break;
 		}
 	}
 
@@ -170,14 +213,18 @@
 			case RIGHT_KEY_CODE:
 				rightPressed = false;
 				break;
-			case SPACE_KEY_CODE:
-				spacePressed = false;
-				break;
+		}
+	}
+
+	function attackPressListener(e) {
+		if (e.keyCode == SPACE_KEY_CODE) {
+			emitBullet(playerXPosition, playerYPosition);
 		}
 	}
 
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
+	document.addEventListener("keypress", attackPressListener, false);
 	//Controls END
 
 	function clearCanvas() {
@@ -188,6 +235,7 @@
 		clearCanvas();
 		drawPlayer();
 		drawEnemies(enemies);
+		drawAllBullets(bullets);
 
 		if (upPressed) {
 			playerYPosition -= PLAYER_SPEED;
@@ -201,6 +249,9 @@
 		if (rightPressed) {
 			playerXPosition += PLAYER_SPEED;
 		}
+
+		moveAllBullets(bullets);
+		removeNeededBullets(bullets);
 
 		requestAnimationFrame(draw);
 	}

@@ -55,7 +55,74 @@
 	var inGameGeneralCompliments = getInGameCompliments(generalCompliments, IN_GAME_GENERAL_COMPLIMENTS_NUMBER);
 	var inGameLookCompliments = getInGameCompliments(lookCompliments, IN_GAME_LOOK_COMPLIMENTS_NUMBER);
 
-	
+	const PLAYER_WIDTH = 15;
+	const PLAYER_HEIGHT = 15;
+
+	var playerXPosition = canvas.width / 2;
+	var playerYPosition = canvas.height / 2;
+
+	function drawUser() {
+		ctx.beginPath();
+		ctx.arc(playerXPosition, playerYPosition, PLAYER_WIDTH, 0, Math.PI * 2);
+		ctx.fillStyle = "#0095DD";
+		ctx.fill();
+		ctx.closePath();
+	}
+
+	var upPressed;
+	var downPressed;
+	var leftPressed;
+	var rightPressed;
+	var spacePressed;
+
+	const UP_KEY_CODE = 38;
+	const DOWN_KEY_CODE = 40;
+	const LEFT_KEY_CODE = 37;
+	const RIGHT_KEY_CODE = 39;
+	const SPACE_KEY_CODE = 32;
+
+	function keyDownHandler(e) {
+		switch (e.keyCode) {
+			case UP_KEY_CODE:
+				upPressed = true;
+				break;
+			case DOWN_KEY_CODE:
+				downPressed = true;
+				break;
+			case LEFT_KEY_CODE:
+				leftPressed = true;
+				break;
+			case RIGHT_KEY_CODE:
+				rightPressed = true;
+				break;
+			case SPACE_KEY_CODE:
+				spacePressed = true;
+				break;
+		}
+	}
+
+	function keyUpHandler(e) {
+		switch (e.keyCode) {
+			case UP_KEY_CODE:
+				upPressed = false;
+				break;
+			case DOWN_KEY_CODE:
+				downPressed = false;
+				break;
+			case LEFT_KEY_CODE:
+				leftPressed = false;
+				break;
+			case RIGHT_KEY_CODE:
+				rightPressed = false;
+				break;
+			case SPACE_KEY_CODE:
+				spacePressed = false;
+				break;
+		}
+	}
+
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
 </script>
 
 </body>

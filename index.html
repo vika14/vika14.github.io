@@ -83,6 +83,8 @@
 		{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 * 3 },
 	];
 	const ENEMY_RADIUS = 20;
+	const ENEMY_HEALTH_TEXT_X_OFFSET = -4;
+	const ENEMY_HEALTH_TEXT_Y_OFFSET = 5;
 
 	function buildEnemies(enemiesNumber) {
 		var enemies = [];
@@ -102,7 +104,18 @@
 		}
 	}
 
+	function drawEnemies(enemies) {
+		for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
+			drawEnemy(enemies[enemyPosition]);
+		}
+	}
+
 	function drawEnemy(enemy) {
+		drawEnemyBody(enemy);
+		drawEnemyHealth(enemy);
+	}
+
+	function drawEnemyBody(enemy) {
 		ctx.beginPath();
 		ctx.arc(enemy.xPosition, enemy.yPosition, ENEMY_RADIUS, 0, Math.PI * 2);
 		ctx.fillStyle = "#FF0000";
@@ -110,10 +123,13 @@
 		ctx.closePath();
 	}
 
-	function drawEnemies(enemies) {
-		for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
-			drawEnemy(enemies[enemyPosition]);
-		}
+	function drawEnemyHealth(enemy) {
+		ctx.font = "16px Arial";
+		ctx.fillStyle = "#FFFFFF";
+		ctx.fillText(
+			enemy.health,
+			enemy.xPosition + ENEMY_HEALTH_TEXT_X_OFFSET,
+			enemy.yPosition + ENEMY_HEALTH_TEXT_Y_OFFSET);
 	}
 
 	var enemies = buildEnemies(ENEMIES_NUMBER);

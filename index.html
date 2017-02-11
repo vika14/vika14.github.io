@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Вика :)</title>
+	<style>
+		* { padding: 0; margin: 0; }
+		canvas { background: #eee; display: block; margin: 0 auto; }
+	</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="480" height="320"></canvas>
+
+<script>
+	var canvas = document.getElementById("gameCanvas");
+	var ctx = canvas.getContext("2d");
+
+	var generalCompliments = [
+		"красивая", "милая", "сладкая",
+		"вкусная", "умная", "сексуальная",
+		"горячая", "хорошая", "заботливая",
+		"понимающая", "чудесная", "волшебная"
+	];
+	var lookCompliments = [
+		"красивые глаза", "прекрасные губы", "замечательные волосы",
+		"великолепные брови", "завораживающая шея", "нежные руки", 
+	];
+
+	const IN_GAME_GENERAL_COMPLIMENTS_NUMBER = 4;
+	const IN_GAME_LOOK_COMPLIMENTS_NUMBER = 2;
+
+	function getInGameCompliments(complimentsSource, comlimentsNumber) {
+		usedIndexes = [];
+		compliments = [];
+		var complimentPosition = 0;
+
+		while (complimentPosition < comlimentsNumber) {
+			var newComplimentPosition;
+			do {
+				newComplimentPosition = getRandomInt(0, complimentsSource.length);
+			} while (usedIndexes.indexOf(newComplimentPosition) !== -1);
+			usedIndexes.push(newComplimentPosition);
+			complimentPosition++;
+			compliments.push(complimentsSource[newComplimentPosition]);
+		}
+
+		return compliments;
+	}
+
+	function getRandomInt(min, max) {
+		return Math.floor(Math.random() * (max - min)) + min;
+	}
+
+	var inGameGeneralCompliments = getInGameCompliments(generalCompliments, IN_GAME_GENERAL_COMPLIMENTS_NUMBER);
+	var inGameLookCompliments = getInGameCompliments(lookCompliments, IN_GAME_LOOK_COMPLIMENTS_NUMBER);
+
+	
+</script>
+
+</body>
+</html>

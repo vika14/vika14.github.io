@@ -122,13 +122,20 @@
 
 	//Bullet START
 	const BULLET_RADIUS = 5;
-	const BULLET_SPEED = 8;
+	const BULLET_SPEED = 4;
 
+	var bulletsXCurrentDirection = 0;
+	var bulletsYCurrentDirection = -1;
 	var bullets = [];
 
 	function emitBullet(startXPosition, startYPosition) {
-		bullets.push(
-			{ xPosition: startXPosition, yPosition: startYPosition, inPullPosition: bullets.length });
+		bullets.push({ 
+			xPosition: startXPosition,
+			yPosition: startYPosition,
+			inPullPosition: bullets.length,
+			xDirection: bulletsXCurrentDirection,
+			yDirection: bulletsYCurrentDirection 
+		});
 	}
 
 	function removeNeededBullets(bullets) {
@@ -152,7 +159,31 @@
 	}
 
 	function moveBullet(bullet) {
-		bullet.yPosition -= BULLET_SPEED;
+		bullet.xPosition += bullet.xDirection;
+		bullet.yPosition += bullet.yDirection;
+	}
+
+	function setBulletsDirection(newXDirection, newYDirection) {
+		if (newXDirection === 0 && newYDirection === 0) {
+			newXDirection = 0;
+			newYDirection = -1;
+		}
+
+		speedCoefficient = getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection);
+
+		bulletsXCurrentDirection = newXDirection * speedCoefficient;
+		bulletsYCurrentDirection = newYDirection * speedCoefficient;
+	}
+
+	function getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection) {
+		var speedCoefficient = 1;
+		if (Math.abs(newXDirection) > Math.abs(newYDirection)) {
+			speedCoefficient = Math.abs(newXDirection) / BULLET_SPEED;
+		} else {
+			speedCoefficient = Math.abs(newYDirection) / BULLET_SPEED;
+		}
+
+		return 1 / speedCoefficient;
 	}
 
 	function drawAllBullets(bullets) {
@@ -180,7 +211,6 @@
 	const DOWN_KEY_CODE = 40;
 	const LEFT_KEY_CODE = 37;
 	const RIGHT_KEY_CODE = 39;
-	const SPACE_KEY_CODE = 32;
 
 	function keyDownHandler(e) {
 		switch (e.keyCode) {
@@ -217,14 +247,50 @@
 	}
 
 	function attackPressListener(e) {
-		if (e.keyCode == SPACE_KEY_CODE) {
-			emitBullet(playerXPosition, playerYPosition);
+		emitBullet(playerXPosition, playerYPosition);
+	}
+
+	function mouseMoveListener(e) {
+		var mousePosition = getMousePosition(e);
+		if (isMouseAtCanvas(mousePosition, canvas)) { 
+			var directionVector = getDirectionVector(mousePosition, playerXPosition, playerYPosition);
+			setBulletsDirection(directionVector.x, directionVector.y);
 		}
+	}
+
+	function getMousePosition(e) {
+		var rect = canvas.getBoundingClientRect();
+		return {
+			xPosition: e.clientX - rect.left,
+			yPosition: e.clientY - rect.top
+		};
+	}
+
+	function isMouseAtCanvas(mousePosition, canvas) {
+		return mousePosition.xPosition > 0 && mousePosition.xPosition < canvas.width 
+				&& mousePosition.yPosition > 0 && mousePosition.yPosition < canvas.height
+	}
+
+	function getDirectionVector(mousePosition, playerXPosition, playerYPosition) {
+		directionVector = { x: 0, y: 0 };
+
+		directionVector.x = mousePosition.xPosition - playerXPosition;
+		directionVector.y = mousePosition.yPosition - playerYPosition;
+
+		/*if (directionVector.x !== 0) {
+			directionVector.x /= Math.abs(directionVector.x);
+		}
+		if (directionVector.y !== 0) {
+			directionVector.y /= Math.abs(directionVector.y);
+		}*/
+
+		return directionVector;
 	}
 
 	document.addEventListener("keydown", keyDownHandler, false);
 	document.addEventListener("keyup", keyUpHandler, false);
-	document.addEventListener("keypress", attackPressListener, false);
+	document.addEventListener("click", attackPressListener, false);
+	document.addEventListener("mousemove", mouseMoveListener, false);
 	//Controls END
 
 	function clearCanvas() {

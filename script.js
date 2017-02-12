@@ -297,19 +297,23 @@ var bulletsXCurrentDirection = 0;
 var bulletsYCurrentDirection = -1;
 var bullets = [];
 
-function emitBullet(startXPosition, startYPosition, playerBullet) {
+function emitBullet(startXPosition, startYPosition, targetXPosition, targetYPosition, playerBullet) {
 	var bulletColor;
 	if (playerBullet) {
 		bulletColor = PLAYER_BULLET_COLOR;
 	} else {
 		bulletColor = ENEMY_BULLET_COLOR;
 	}
+
+	var target = { xPosition: targetXPosition, yPosition: targetYPosition};
+	var direction = getDirectionVector(target, startXPosition, startYPosition);
+
 	bullets.push({ 
 		xPosition: startXPosition,
 		yPosition: startYPosition,
 		inPullPosition: bullets.length,
-		xDirection: bulletsXCurrentDirection,
-		yDirection: bulletsYCurrentDirection,
+		xDirection: direction.x,
+		yDirection: direction.y,
 		isPlayerBullet: playerBullet,
 		color: bulletColor
 	});
@@ -391,7 +395,13 @@ function getDistanceBetweenPoints(firstX, firstY, secondX, secondY) {
 	return Math.sqrt(xDifferenceSqr + yDifferenceSqr);
 }
 
-function setBulletsDirection(newXDirection, newYDirection) {
+function setAllBulletsDirection(newXDirection, newYDirection) {
+	for (var bulletPosition = 0; bulletPosition < bulles.length; bulletPosition++) {
+		setBulletDirection()
+	}
+}
+
+function setBulletDirection(bullet, newXDirection, newYDirection) {
 	if (newXDirection === 0 && newYDirection === 0) {
 		newXDirection = 0;
 		newYDirection = -1;
@@ -399,8 +409,8 @@ function setBulletsDirection(newXDirection, newYDirection) {
 
 	speedCoefficient = getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection, BULLET_SPEED);
 
-	bulletsXCurrentDirection = newXDirection * speedCoefficient;
-	bulletsYCurrentDirection = newYDirection * speedCoefficient;
+	bullet.xDirection = newXDirection * speedCoefficient;
+	bullet.yDirection = newYDirection * speedCoefficient;
 }
 
 function drawAllBullets(bullets) {
@@ -471,7 +481,7 @@ function mouseMoveListener(e) {
 	var mousePosition = getMousePosition(e);
 	if (isMouseAtCanvas(mousePosition, canvas)) { 
 		var directionVector = getDirectionVector(mousePosition, playerXPosition, playerYPosition);
-		setBulletsDirection(directionVector.x, directionVector.y);
+		setAllBulletsDirection(directionVector.x, directionVector.y);
 	}
 }
 

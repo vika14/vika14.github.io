@@ -61,6 +61,21 @@ function registerCollisionPlayerWithBullet() {
 	}
 }
 
+function movePlayer() {
+	if (upPressed && playerYPosition - PLAYER_HEIGHT >= 0) {
+		playerYPosition -= PLAYER_SPEED;
+	}
+	if (downPressed && playerYPosition + PLAYER_HEIGHT <= canvas.height) {
+		playerYPosition += PLAYER_SPEED;
+	}
+	if (leftPressed && playerXPosition - PLAYER_WIDTH >= 0) {
+		playerXPosition -= PLAYER_SPEED;
+	}
+	if (rightPressed && playerXPosition + PLAYER_WIDTH <= canvas.width) {
+		playerXPosition += PLAYER_SPEED;
+	}
+}
+
 function drawPlayer() {
 	ctx.beginPath();
 	ctx.arc(playerXPosition, playerYPosition, PLAYER_WIDTH, 0, Math.PI * 2);
@@ -500,19 +515,7 @@ function draw() {
 	drawEnemies(enemies);
 	drawAllBullets(bullets);
 
-	if (upPressed) {
-		playerYPosition -= PLAYER_SPEED;
-	}
-	if (downPressed) {
-		playerYPosition += PLAYER_SPEED;
-	}
-	if (leftPressed) {
-		playerXPosition -= PLAYER_SPEED;
-	}
-	if (rightPressed) {
-		playerXPosition += PLAYER_SPEED;
-	}
-
+	movePlayer();
 	moveEnemies(enemies);
 	moveAllBullets(bullets);
 	removeNeededBullets(bullets);

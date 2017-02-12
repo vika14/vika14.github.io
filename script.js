@@ -279,8 +279,8 @@ function emitBullet(startXPosition, startYPosition, playerBullet) {
 		yPosition: startYPosition,
 		inPullPosition: bullets.length,
 		xDirection: bulletsXCurrentDirection,
-		yDirection: bulletsYCurrentDirection 
-		isPlayerBullet: playerBullet;
+		yDirection: bulletsYCurrentDirection,
+		isPlayerBullet: playerBullet
 	});
 }
 

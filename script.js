@@ -40,6 +40,10 @@ function getRandomInt(min, max) {
 var inGameGeneralCompliments = getInGameCompliments(generalCompliments, IN_GAME_GENERAL_COMPLIMENTS_NUMBER);
 var inGameLookCompliments = getInGameCompliments(lookCompliments, IN_GAME_LOOK_COMPLIMENTS_NUMBER);
 
+function notifyGameOver() {
+	console.log("Game over.");
+}
+
 //Player START
 const PLAYER_WIDTH = 15;
 const PLAYER_HEIGHT = 15;
@@ -48,6 +52,14 @@ const PLAYER_SPEED = 2;
 
 var playerXPosition = canvas.width / 2;
 var playerYPosition = canvas.height / 2;
+var playerHealth = 3;
+
+function registerCollisionPlayerWithBullet() {
+	playerHealth--;
+	if (playerHealth === 0) {
+		notifyGameOver();
+	}
+}
 
 function drawPlayer() {
 	ctx.beginPath();
@@ -160,7 +172,7 @@ function buildPath(startPoint, pathLength, pathColumnsNumber, pathRowsNumber, ca
 	return path;
 }
 
-function registerCollisionWithBullet(enemies, enemyPosition) {
+function registerCollisionEnemyWithBullet(enemies, enemyPosition) {
 	var enemy = enemies[enemyPosition];
 	enemy.health--;
 	if (enemy.health === 0) {
@@ -216,6 +228,10 @@ function setEmenyDirection(enemy, direction) {
 	enemy.yDirection = direction.y * speedCoefficient;
 } 
 
+function attackPlayer() {
+
+}
+
 function drawEnemies(enemies) {
 	for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
 		drawEnemy(enemies[enemyPosition]);
@@ -257,13 +273,14 @@ var bulletsXCurrentDirection = 0;
 var bulletsYCurrentDirection = -1;
 var bullets = [];
 
-function emitBullet(startXPosition, startYPosition) {
+function emitBullet(startXPosition, startYPosition, playerBullet) {
 	bullets.push({ 
 		xPosition: startXPosition,
 		yPosition: startYPosition,
 		inPullPosition: bullets.length,
 		xDirection: bulletsXCurrentDirection,
 		yDirection: bulletsYCurrentDirection 
+		isPlayerBullet: playerBullet;
 	});
 }
 
@@ -297,15 +314,23 @@ function moveAllBullets(bullets) {
 function moveBullet(bullet) {
 	bullet.xPosition += bullet.xDirection;
 	bullet.yPosition += bullet.yDirection;
-	detectCollisionAndRemoveEnemy(bullet, enemies);
+	detectCollisionAndRemoveCharacter(bullet, enemies);
 }
 
-function detectCollisionAndRemoveEnemy(bullet, enemies) {
+function detectCollisionAndRemoveCharacter(bullet, enemies) {
+	if (bullet.isPlayerBullet) {
+		detectCollisionWithEnemy(bullet, enemies);
+	} else {
+		detectCollisionWithPlayer(bullet);
+	}
+}
+
+function detectCollisionWithEnemy(bullet, enemies) {
 	var enemyPosition = 0;
 	while (enemyPosition < enemies.length) {
 		var enemy = enemies[enemyPosition];
-		if (isHitEnemy(bullet, enemy)) {
-			registerCollisionWithBullet(enemies, enemyPosition);
+		if (isHitWithCharacter(bullet, enemy, ENEMY_RADIUS)) {
+			registerCollisionEnemyWithBullet(enemies, enemyPosition);
 			removeBullet(bullet.inPullPosition);
 			break;
 		} else {
@@ -314,12 +339,18 @@ function detectCollisionAndRemoveEnemy(bullet, enemies) {
 	}
 }
 
-function isHitEnemy(bullet, enemy) {
-	var distance = getDistanceBetweenPoints(bullet.xPosition, bullet.yPosition,
-											enemy.xPosition, enemy.yPosition);
-	var radiusedSum = BULLET_RADIUS + ENEMY_RADIUS;
+function detectCollisionWithPlayer(bullet) {
+	if (isHitWithCharacter(bullet, { xPosition: playerXPosition, yPosition: playerYPosition }, PLAYER_WIDTH)) {
+		registerCollisionPlayerWithBullet();
+	}
+}
 
-	return distance <= radiusedSum;
+function isHitWithCharacter(bullet, character, characterRadius) {
+	var distance = getDistanceBetweenPoints(bullet.xPosition, bullet.yPosition,
+											character.xPosition, character.yPosition);
+	var radiusesSum = BULLET_RADIUS + characterRadius;
+
+	return distance <= radiusesSum;
 }
 
 function getDistanceBetweenPoints(firstX, firstY, secondX, secondY) {
@@ -402,7 +433,7 @@ function keyUpHandler(e) {
 }
 
 function attackPressListener(e) {
-	emitBullet(playerXPosition, playerYPosition);
+	emitBullet(playerXPosition, playerYPosition, true);
 }
 
 function mouseMoveListener(e) {

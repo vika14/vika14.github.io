@@ -67,6 +67,10 @@ const ENEMIES_START_POSITIONS = [
 	{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 * 3 },
 	{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 * 3 },
 ];
+const ENEMY_PATH_COLUMNS_NUMBER = 10;
+const ENEMY_PATH_ROWS_NUMBER = 10;
+const ENEMY_PATH_LENGTH = 16;
+const ENEMY_SPEED = 5;
 const ENEMIES_COLORS = [
 	"#9C27B0",
 	"#673AB7",
@@ -88,7 +92,12 @@ function buildEnemies(enemiesNumber) {
 			xPosition: 0,
 			yPosition: 0,
 			health: ENEMY_HEALTH,
-			color: enemyColor });
+			color: enemyColor,
+			path: [],
+			pathCurrentPosition: 0,
+			xDirection: 0,
+			yDirection: 0
+		});
 	}
 
 	return enemies;
@@ -109,6 +118,48 @@ function placeEnemies(enemies) {
 	}
 }
 
+function buildPathesForEnemies(enemies, canvas) {
+	for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
+		var startPoint = { 
+			xPosition: enemies[enemyPosition].xPosition,
+			yPosition: enemies[enemyPosition].yPosition
+		};
+		var path = buildPath(startPoint, ENEMY_PATH_LENGTH,
+							 ENEMY_PATH_COLUMNS_NUMBER, ENEMY_PATH_ROWS_NUMBER, canvas);
+		enemies[enemyPosition].path = path;
+	}
+}
+
+function buildPath(startPoint, pathLength, pathColumnsNumber, pathRowsNumber, canvas) {
+	path = [startPoint];
+
+	for (var pathPartPosition = 1; pathPartPosition < pathLength; pathPartPosition++) {
+		var columnPosition = getRandomInt(0, pathColumnsNumber);
+		var rowPosition = getRandomInt(0, pathRowsNumber);
+
+		var x = canvas.width / columnPosition;
+		var y = canvas.height / rowPosition;
+
+		if (x === 0 || x == Infinity) {
+			x = 0 + ENEMY_RADIUS;
+		}
+		if (x === canvas.width) {
+			x -= ENEMY_RADIUS;
+		}
+		if (y === 0 || y == Infinity) {
+			y = 0 + ENEMY_RADIUS;
+		}
+		if (y === canvas.height) {
+			y -= ENEMY_RADIUS;
+		}
+
+		var pathPoint = { xPosition: x, yPosition: y };
+		path.push(pathPoint);
+	}
+
+	return path;
+}
+
 function registerCollisionWithBullet(enemies, enemyPosition) {
 	var enemy = enemies[enemyPosition];
 	enemy.health--;
@@ -120,6 +171,50 @@ function registerCollisionWithBullet(enemies, enemyPosition) {
 function removeEnemy(enemies, enemyPosition) {
 	enemies.splice(enemyPosition, 1);
 }
+
+function moveEnemies(enemies) {
+	for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
+		moveEnemy(enemies[enemyPosition]);
+	}
+}
+
+function moveEnemy(enemy) {
+	var nextPathPointPosition;
+
+	if (enemy.pathCurrentPosition == ENEMY_PATH_LENGTH - 1) {
+		nextPathPointPosition = 0;
+	} else {
+		nextPathPointPosition = enemy.pathCurrentPosition + 1;
+	}
+	if (enemy.pathCurrentPosition == ENEMY_PATH_LENGTH - 1) {
+		enemy.pathCurrentPosition = 0;
+	}
+
+	var pathNextPoint = enemy.path[nextPathPointPosition];
+	if (isAtThePoint(pathNextPoint, {xPosition: enemy.xPosition, yPosition: enemy.yPosition })) {
+		enemy.pathCurrentPosition++;
+	} else {
+		var direction = getDirectionVector(pathNextPoint, enemy.xPosition, enemy.yPosition);
+		setEmenyDirection(enemy, direction);
+
+		enemy.xPosition += enemy.xDirection;
+		enemy.yPosition += enemy.yDirection;
+	}
+}
+
+function isAtThePoint(target, pointPosition) {
+	var distance = getDistanceBetweenPoints(target.xPosition, target.yPosition,
+											pointPosition.xPosition, pointPosition.yPosition);
+	return distance <= ENEMY_RADIUS;
+
+}
+
+function setEmenyDirection(enemy, direction) {
+	speedCoefficient = getCurrentDirectionSpeedCoefficient(direction.x, direction.y, ENEMY_SPEED);
+
+	enemy.xDirection = direction.x * speedCoefficient;
+	enemy.yDirection = direction.y * speedCoefficient;
+} 
 
 function drawEnemies(enemies) {
 	for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
@@ -151,6 +246,7 @@ function drawEnemyHealth(enemy) {
 
 var enemies = buildEnemies(ENEMIES_NUMBER);
 placeEnemies(enemies);
+buildPathesForEnemies(enemies, canvas);
 //Enemy END
 
 //Bullet START
@@ -239,21 +335,10 @@ function setBulletsDirection(newXDirection, newYDirection) {
 		newYDirection = -1;
 	}
 
-	speedCoefficient = getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection);
+	speedCoefficient = getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection, BULLET_SPEED);
 
 	bulletsXCurrentDirection = newXDirection * speedCoefficient;
 	bulletsYCurrentDirection = newYDirection * speedCoefficient;
-}
-
-function getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection) {
-	var speedCoefficient = 1;
-	if (Math.abs(newXDirection) > Math.abs(newYDirection)) {
-		speedCoefficient = Math.abs(newXDirection) / BULLET_SPEED;
-	} else {
-		speedCoefficient = Math.abs(newYDirection) / BULLET_SPEED;
-	}
-
-	return 1 / speedCoefficient;
 }
 
 function drawAllBullets(bullets) {
@@ -341,11 +426,11 @@ function isMouseAtCanvas(mousePosition, canvas) {
 			&& mousePosition.yPosition > 0 && mousePosition.yPosition < canvas.height
 }
 
-function getDirectionVector(mousePosition, playerXPosition, playerYPosition) {
+function getDirectionVector(target, startXPosition, startYPosition) {
 	directionVector = { x: 0, y: 0 };
 
-	directionVector.x = mousePosition.xPosition - playerXPosition;
-	directionVector.y = mousePosition.yPosition - playerYPosition;
+	directionVector.x = target.xPosition - startXPosition;
+	directionVector.y = target.yPosition - startYPosition;
 
 	/*if (directionVector.x !== 0) {
 		directionVector.x /= Math.abs(directionVector.x);
@@ -355,6 +440,17 @@ function getDirectionVector(mousePosition, playerXPosition, playerYPosition) {
 	}*/
 
 	return directionVector;
+}
+
+function getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection, speed) {
+	var speedCoefficient = 1;
+	if (Math.abs(newXDirection) > Math.abs(newYDirection)) {
+		speedCoefficient = Math.abs(newXDirection) / speed;
+	} else {
+		speedCoefficient = Math.abs(newYDirection) / speed;
+	}
+
+	return 1 / speedCoefficient;
 }
 
 document.addEventListener("keydown", keyDownHandler, false);
@@ -386,6 +482,7 @@ function draw() {
 		playerXPosition += PLAYER_SPEED;
 	}
 
+	moveEnemies(enemies);
 	moveAllBullets(bullets);
 	removeNeededBullets(bullets);
 

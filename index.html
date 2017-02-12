@@ -75,7 +75,7 @@
 
 	//Enemy START
 	const ENEMIES_NUMBER = 4;
-	const ENEMY_HEALTH = 3;
+	const ENEMY_HEALTH = 2;
 	const ENEMIES_START_POSITIONS = [
 		{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 },
 		{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 },
@@ -101,6 +101,14 @@
 				 enemyPosition++) {
 			enemies[enemyPosition].xPosition = ENEMIES_START_POSITIONS[enemyPosition].xPosition;
 			enemies[enemyPosition].yPosition = ENEMIES_START_POSITIONS[enemyPosition].yPosition;
+		}
+	}
+
+	function registerCollisionWithBullet(enemies, enemyPosition) {
+		var enemy = enemies[enemyPosition];
+		enemy.health--;
+		if (enemy.health === 0) {
+			removeEnemy(enemies, enemyPosition);
 		}
 	}
 
@@ -196,8 +204,9 @@
 		while (enemyPosition < enemies.length) {
 			var enemy = enemies[enemyPosition];
 			if (isHitEnemy(bullet, enemy)) {
-				removeEnemy(enemies, enemyPosition);
+				registerCollisionWithBullet(enemies, enemyPosition);
 				removeBullet(bullet.inPullPosition);
+				break;
 			} else {
 				enemyPosition++;
 			}

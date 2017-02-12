@@ -104,6 +104,10 @@
 		}
 	}
 
+	function removeEnemy(enemies, enemyPosition) {
+		enemies.splice(enemyPosition, 1);
+	}
+
 	function drawEnemies(enemies) {
 		for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
 			drawEnemy(enemies[enemyPosition]);
@@ -166,6 +170,13 @@
 
 	function removeBullet(bulletPosition) {
 		bullets.splice(bulletPosition, 1);
+		updateInPullPositions(bulletPosition, bullets);
+	}
+
+	function updateInPullPositions(startPosition, bullets) {
+		for (var bulletPosition = startPosition; bulletPosition < bullets.length; bulletPosition++) {
+			bullets[bulletPosition].inPullPosition--;
+		}
 	}
 
 	function moveAllBullets(bullets) {
@@ -177,6 +188,35 @@
 	function moveBullet(bullet) {
 		bullet.xPosition += bullet.xDirection;
 		bullet.yPosition += bullet.yDirection;
+		detectCollisionAndRemoveEnemy(bullet, enemies);
+	}
+
+	function detectCollisionAndRemoveEnemy(bullet, enemies) {
+		var enemyPosition = 0;
+		while (enemyPosition < enemies.length) {
+			var enemy = enemies[enemyPosition];
+			if (isHitEnemy(bullet, enemy)) {
+				removeEnemy(enemies, enemyPosition);
+				removeBullet(bullet.inPullPosition);
+			} else {
+				enemyPosition++;
+			}
+		}
+	}
+
+	function isHitEnemy(bullet, enemy) {
+		var distance = getDistanceBetweenPoints(bullet.xPosition, bullet.yPosition,
+												enemy.xPosition, enemy.yPosition);
+		var radiusedSum = BULLET_RADIUS + ENEMY_RADIUS;
+
+		return distance <= radiusedSum;
+	}
+
+	function getDistanceBetweenPoints(firstX, firstY, secondX, secondY) {
+		var xDifferenceSqr = Math.pow(firstX - secondX, 2);
+		var yDifferenceSqr = Math.pow(firstY - secondY, 2);
+
+		return Math.sqrt(xDifferenceSqr + yDifferenceSqr);
 	}
 
 	function setBulletsDirection(newXDirection, newYDirection) {

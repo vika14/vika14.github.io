@@ -47,6 +47,8 @@ function notifyGameOver() {
 //Player START
 const PLAYER_WIDTH = 15;
 const PLAYER_HEIGHT = 15;
+const PLAYER_COLOR = "#0095DD";
+const PLAYER_BULLET_COLOR = PLAYER_COLOR;
 
 const PLAYER_SPEED = 2;
 
@@ -79,7 +81,7 @@ function movePlayer() {
 function drawPlayer() {
 	ctx.beginPath();
 	ctx.arc(playerXPosition, playerYPosition, PLAYER_WIDTH, 0, Math.PI * 2);
-	ctx.fillStyle = "#0095DD";
+	ctx.fillStyle = PLAYER_COLOR;
 	ctx.fill();
 	ctx.closePath();
 }
@@ -107,6 +109,7 @@ const ENEMIES_COLORS = [
 	"#607D8B",
 	"#D50000",
 ];
+const ENEMY_BULLET_COLOR = "#6D4C41";
 const ENEMY_RADIUS = 20;
 const ENEMY_HEALTH_TEXT_X_OFFSET = -4;
 const ENEMY_HEALTH_TEXT_Y_OFFSET = 5;
@@ -243,8 +246,14 @@ function setEmenyDirection(enemy, direction) {
 	enemy.yDirection = direction.y * speedCoefficient;
 } 
 
-function attackPlayer() {
+function attackPlayer(enemies) {
+	for (var enemyPosition = 0; enemyPosition < enemies.length; enemyPosition++) {
+		makeAttack(enemies[enemyPosition]);
+	}
+}
 
+function makeAttack(enemy) {
+	emitBullet(enemy.xPosition, enemy.yPosition, false);
 }
 
 function drawEnemies(enemies) {
@@ -289,13 +298,20 @@ var bulletsYCurrentDirection = -1;
 var bullets = [];
 
 function emitBullet(startXPosition, startYPosition, playerBullet) {
+	var bulletColor;
+	if (playerBullet) {
+		bulletColor = PLAYER_BULLET_COLOR;
+	} else {
+		bulletColor = ENEMY_BULLET_COLOR;
+	}
 	bullets.push({ 
 		xPosition: startXPosition,
 		yPosition: startYPosition,
 		inPullPosition: bullets.length,
 		xDirection: bulletsXCurrentDirection,
 		yDirection: bulletsYCurrentDirection,
-		isPlayerBullet: playerBullet
+		isPlayerBullet: playerBullet,
+		color: bulletColor
 	});
 }
 
@@ -396,7 +412,7 @@ function drawAllBullets(bullets) {
 function drawBullet(bullet) {
 	ctx.beginPath();
 	ctx.arc(bullet.xPosition, bullet.yPosition, BULLET_RADIUS, 0, Math.PI * 2);
-	ctx.fillStyle = "#FF0000";
+	ctx.fillStyle = bullet.color;
 	ctx.fill();
 	ctx.closePath();
 }
@@ -508,6 +524,15 @@ document.addEventListener("mousemove", mouseMoveListener, false);
 function clearCanvas() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
+
+const DELAY_BETWEEN_ATTACKS = 250;
+const DELAY_FIRST_ATTACK = 1500;
+
+function startAttacking() {
+	setInterval(function () { attackPlayer(enemies); }, DELAY_BETWEEN_ATTACKS);
+}
+
+setTimeout(startAttacking, DELAY_FIRST_ATTACK);
 
 function draw() {
 	clearCanvas();

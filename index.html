@@ -82,6 +82,15 @@
 		{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 * 3 },
 		{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 * 3 },
 	];
+	const ENEMIES_COLORS = [
+		"#9C27B0",
+		"#673AB7",
+		"#1976D2",
+		"#00796B",
+		"#FF5722",
+		"#607D8B",
+		"#D50000",
+	];
 	const ENEMY_RADIUS = 20;
 	const ENEMY_HEALTH_TEXT_X_OFFSET = -4;
 	const ENEMY_HEALTH_TEXT_Y_OFFSET = 5;
@@ -89,10 +98,21 @@
 	function buildEnemies(enemiesNumber) {
 		var enemies = [];
 		for (var enemyPosition = 0; enemyPosition < enemiesNumber; enemyPosition++) {
-			enemies.push({ xPosition: 0, yPosition: 0, health: ENEMY_HEALTH });
+			var enemyColor = getEnemyColor();
+			enemies.push({ 
+				xPosition: 0,
+				yPosition: 0,
+				health: ENEMY_HEALTH,
+				color: enemyColor });
 		}
 
 		return enemies;
+	}
+
+	function getEnemyColor() {
+		var colorPosition = getRandomInt(0, ENEMIES_COLORS.length);
+
+		return ENEMIES_COLORS[colorPosition];
 	}
 
 	function placeEnemies(enemies) {
@@ -130,7 +150,7 @@
 	function drawEnemyBody(enemy) {
 		ctx.beginPath();
 		ctx.arc(enemy.xPosition, enemy.yPosition, ENEMY_RADIUS, 0, Math.PI * 2);
-		ctx.fillStyle = "#FF0000";
+		ctx.fillStyle = enemy.color;
 		ctx.fill();
 		ctx.closePath();
 	}

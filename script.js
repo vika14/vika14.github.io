@@ -11,9 +11,13 @@ var lookCompliments = [
 	"красивые глаза", "прекрасные губы", "замечательные волосы",
 	"великолепные брови", "завораживающая шея", "нежные руки", 
 ];
+var gottenCompliments = [];
 
 const IN_GAME_GENERAL_COMPLIMENTS_NUMBER = 4;
 const IN_GAME_LOOK_COMPLIMENTS_NUMBER = 2;
+const COMPLIMENT_FONT = "16px Arial";
+COMPLIMENT_START_OPACITY = 1;
+const COMPLIMENT_OPACITY_DIFF = 0.025;
 
 function getInGameCompliments(complimentsSource, comlimentsNumber) {
 	usedIndexes = [];
@@ -37,11 +41,91 @@ function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min)) + min;
 }
 
+function shuffle(array) {
+    var j, x, i;
+    for (i = array.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = array[i - 1];
+        array[i - 1] = array[j];
+        array[j] = x;
+    }
+}
+
 var inGameGeneralCompliments = getInGameCompliments(generalCompliments, IN_GAME_GENERAL_COMPLIMENTS_NUMBER);
 var inGameLookCompliments = getInGameCompliments(lookCompliments, IN_GAME_LOOK_COMPLIMENTS_NUMBER);
 
+var inGameAllCompliments = inGameGeneralCompliments.concat(inGameLookCompliments);
+shuffle(inGameAllCompliments);
+const ALL_COMPLIMENTS_NUMBER = inGameAllCompliments.length;
+
 function notifyGameOver() {
 	console.log("Game over.");
+}
+
+function drawAllCompliments() {
+	for (var complimentPosition = 0; complimentPosition < gottenCompliments.length; complimentPosition++) {
+		drawCompliment(gottenCompliments[complimentPosition]);
+		changeComplimentOpcity(gottenCompliments, complimentPosition);
+		if (gottenCompliments[complimentPosition].opacity === 0) {
+			removeCompliment(gottenCompliments, complimentPosition);
+		}
+	}
+}
+
+function drawCompliment(compliment) {
+	ctx.font = COMPLIMENT_FONT;
+	ctx.fillStyle = compliment.color;
+	ctx.fillText(compliment.text, compliment.xPosition, compliment.yPosition);
+}
+
+function changeComplimentOpcity(compliments, complimentPosition) {
+	var opacity = compliments[complimentPosition].opacity;
+	var color = compliments[complimentPosition].color;
+
+	opacity -= COMPLIMENT_OPACITY_DIFF;
+	color = updateColorOpacity(color, opacity);
+
+	compliments[complimentPosition].opacity = opacity;
+	compliments[complimentPosition].color = color;
+}
+
+function updateColorOpacity(color, opacity) {
+	if (opacity !== 0) {
+		var opacityPosition = color.lastIndexOf(",");
+		var newColorPart = color.substring(0, opacityPosition + 1);
+		var newColor = newColorPart + opacity.toString() + ")";
+
+		return newColor;
+	}
+
+	return color;
+}
+
+function removeCompliment(gottenCompliments, complimentPosition) {
+	gottenCompliments.splice(complimentPosition, 1);
+}
+
+function addCompliment(
+		complimentText, complimentColor,
+		complimentXPosition, complimentYPosition,
+		complimentOpacity) {
+	gottenCompliments.push({
+		text: complimentText,
+		color: hexToRgba(complimentColor, complimentOpacity),
+		xPosition: complimentXPosition,
+		yPosition: complimentYPosition,
+		opacity: complimentOpacity
+	});
+}
+
+function hexToRgba(hex, opacity){
+    hex = hex.replace('#','');
+    var r = parseInt(hex.substring(0,2), 16);
+    var g = parseInt(hex.substring(2,4), 16);
+    var b = parseInt(hex.substring(4,6), 16);
+
+    var result = "rgba("+r+","+g+","+b+","+opacity+")";
+    return result;
 }
 
 //Player START
@@ -92,6 +176,7 @@ function drawPlayer() {
 
 //Enemy START
 const ENEMIES_NUMBER = 4;
+const ENEMIES_ADDITION_SPAWN_TIMES = ALL_COMPLIMENTS_NUMBER - ENEMIES_NUMBER;
 const ENEMY_HEALTH = 2;
 const ENEMIES_START_POSITIONS = [
 	{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 },
@@ -117,10 +202,13 @@ const ENEMY_RADIUS = 20;
 const ENEMY_HEALTH_TEXT_X_OFFSET = -4;
 const ENEMY_HEALTH_TEXT_Y_OFFSET = 5;
 
+var complimentPosition = 0;
+
 function buildEnemies(enemiesNumber) {
 	var enemies = [];
 	for (var enemyPosition = 0; enemyPosition < enemiesNumber; enemyPosition++) {
 		var enemyColor = getEnemyColor();
+		var enemyCompliment = getEnemyCompliment();
 		enemies.push({ 
 			xPosition: 0,
 			yPosition: 0,
@@ -129,7 +217,8 @@ function buildEnemies(enemiesNumber) {
 			path: [],
 			pathCurrentPosition: 0,
 			xDirection: 0,
-			yDirection: 0
+			yDirection: 0,
+			compliment: enemyCompliment
 		});
 	}
 
@@ -140,6 +229,16 @@ function getEnemyColor() {
 	var colorPosition = getRandomInt(0, ENEMIES_COLORS.length);
 
 	return ENEMIES_COLORS[colorPosition];
+}
+
+function getEnemyCompliment() {
+	if (complimentPosition !== inGameAllCompliments.length) {
+		var compliment = inGameAllCompliments[complimentPosition];
+		complimentPosition++;
+		return compliment;
+	}
+
+	return "";
 }
 
 function placeEnemies(enemies) {
@@ -197,6 +296,9 @@ function registerCollisionEnemyWithBullet(enemies, enemyPosition) {
 	var enemy = enemies[enemyPosition];
 	enemy.health--;
 	if (enemy.health === 0) {
+		addCompliment(enemy.compliment, enemy.color,
+					  enemy.xPosition, enemy.yPosition,
+					  COMPLIMENT_START_OPACITY);
 		removeEnemy(enemies, enemyPosition);
 	}
 }
@@ -551,6 +653,7 @@ setTimeout(startAttacking, DELAY_FIRST_ATTACK);
 
 function draw() {
 	clearCanvas();
+	drawAllCompliments();
 	drawPlayer();
 	drawEnemies(enemies);
 	drawAllBullets(bullets);
@@ -562,5 +665,13 @@ function draw() {
 
 	requestAnimationFrame(draw);
 }
+
+function fadeOut(id, speed) {
+    var s = document.getElementById(id).style;
+    s.opacity = 1;
+    (function fade() {(s.opacity-=.1)<.1?s.display="none":setTimeout(fade,speed)})();
+}
+
+//setTimeout(function() { fadeOut("fade", 3); }, 2000);
 
 draw();

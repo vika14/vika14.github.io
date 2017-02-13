@@ -56,6 +56,9 @@ var playerXPosition = canvas.width / 2;
 var playerYPosition = canvas.height / 2;
 var playerHealth = 3;
 
+var mouseCurrentXPosition;
+var mouseCurrentYPosition;
+
 function registerCollisionPlayerWithBullet() {
 	playerHealth--;
 	if (playerHealth === 0) {
@@ -253,7 +256,7 @@ function attackPlayer(enemies) {
 }
 
 function makeAttack(enemy) {
-	emitBullet(enemy.xPosition, enemy.yPosition, false);
+	emitBullet(enemy.xPosition, enemy.yPosition, playerXPosition, playerYPosition, false);
 }
 
 function drawEnemies(enemies) {
@@ -307,13 +310,14 @@ function emitBullet(startXPosition, startYPosition, targetXPosition, targetYPosi
 
 	var target = { xPosition: targetXPosition, yPosition: targetYPosition};
 	var direction = getDirectionVector(target, startXPosition, startYPosition);
+	speedCoefficient = getCurrentDirectionSpeedCoefficient(direction.x, direction.y, BULLET_SPEED);
 
 	bullets.push({ 
 		xPosition: startXPosition,
 		yPosition: startYPosition,
 		inPullPosition: bullets.length,
-		xDirection: direction.x,
-		yDirection: direction.y,
+		xDirection: direction.x * speedCoefficient,
+		yDirection: direction.y * speedCoefficient,
 		isPlayerBullet: playerBullet,
 		color: bulletColor
 	});
@@ -474,14 +478,15 @@ function keyUpHandler(e) {
 }
 
 function attackPressListener(e) {
-	emitBullet(playerXPosition, playerYPosition, true);
+	emitBullet(playerXPosition, playerYPosition, mouseCurrentXPosition, mouseCurrentYPosition, true);
 }
 
 function mouseMoveListener(e) {
 	var mousePosition = getMousePosition(e);
 	if (isMouseAtCanvas(mousePosition, canvas)) { 
 		var directionVector = getDirectionVector(mousePosition, playerXPosition, playerYPosition);
-		setAllBulletsDirection(directionVector.x, directionVector.y);
+		mouseCurrentXPosition = mousePosition.xPosition;
+		mouseCurrentYPosition = mousePosition.yPosition;
 	}
 }
 

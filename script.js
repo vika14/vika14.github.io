@@ -140,7 +140,8 @@ function addCompliment(
 		type: complimentType
 	};
 	complimentsForDraw.push(compliment);
-	gottenCompliments.push(compliment);
+	var gottenCompliment = getComplimentWithoutZeroOpacity(compliment);
+	gottenCompliments.push(gottenCompliment);
 }
 
 function hexToRgba(hex, opacity){
@@ -151,6 +152,17 @@ function hexToRgba(hex, opacity){
 
     var result = "rgba("+r+","+g+","+b+","+opacity+")";
     return result;
+}
+
+function getComplimentWithoutZeroOpacity(compliment) {
+	return {
+		text: compliment.text,
+		color: removeOpacity(compliment.color),
+		xPosition: compliment.xPosition,
+		yPosition: compliment.yPosition,
+		opacity: 1,
+		type: compliment.type
+	}
 }
 
 //Player START
@@ -606,6 +618,9 @@ const DOWN_KEY_CODE = 40;
 const LEFT_KEY_CODE = 37;
 const RIGHT_KEY_CODE = 39;
 
+const START_TEXT = "Начать!";
+const RESTART_TEXT = "Заново!";
+
 function keyDownHandler(e) {
 	switch (e.keyCode) {
 		case UP_KEY_CODE:
@@ -640,8 +655,19 @@ function keyUpHandler(e) {
 	}
 }
 
-function attackPressListener(e) {
-	emitBullet(playerXPosition, playerYPosition, mouseCurrentXPosition, mouseCurrentYPosition, true);
+function clickListener(e) {
+	if (isGame) {
+		emitBullet(playerXPosition, playerYPosition, mouseCurrentXPosition, mouseCurrentYPosition, true);
+	} else if (isGameNotStarted) {
+		var mousePosition = getMousePosition(e);
+		if (isButtonPressed(mousePosition)) {
+			isGame = true;
+			isGameNotStarted = false;
+			setTimeout(startAttacking, DELAY_FIRST_ATTACK);
+		}
+	} else {
+
+	}
 }
 
 function mouseMoveListener(e) {
@@ -664,6 +690,13 @@ function getMousePosition(e) {
 function isMouseAtCanvas(mousePosition, canvas) {
 	return mousePosition.xPosition > 0 && mousePosition.xPosition < canvas.width 
 			&& mousePosition.yPosition > 0 && mousePosition.yPosition < canvas.height
+}
+
+function isButtonPressed(mousePosition) {
+	return mousePosition.xPosition >= BUTTON_X
+			&& mousePosition.xPosition <= BUTTON_X + BUTTON_WIDTH
+			&& mousePosition.yPosition >= BUTTON_Y
+			&& mousePosition.yPosition <= BUTTON_Y + BUTTON_HEGIHT;
 }
 
 function getDirectionVector(target, startXPosition, startYPosition) {
@@ -695,7 +728,7 @@ function getCurrentDirectionSpeedCoefficient(newXDirection, newYDirection, speed
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
-document.addEventListener("click", attackPressListener, false);
+document.addEventListener("click", clickListener, false);
 document.addEventListener("mousemove", mouseMoveListener, false);
 //Controls END
 
@@ -710,10 +743,8 @@ function startAttacking() {
 	setInterval(function () { attackPlayer(enemies); }, DELAY_BETWEEN_ATTACKS);
 }
 
-setTimeout(startAttacking, DELAY_FIRST_ATTACK);
-
-var isGame = true;
-var isGameNotStarted = false;
+var isGame = false;
+var isGameNotStarted = true;
 
 function draw() {
 	clearCanvas();
@@ -725,7 +756,8 @@ function draw() {
 		moveAllBullets(bullets);
 		removeNeededBullets(bullets);
 	} else if (isGameNotStarted) {
-
+		drawPrompt();
+		drawButton(START_TEXT);
 	} else {
 		notifyGameOver();
 		if (playerHealth > 0) {
@@ -840,14 +872,82 @@ function drawGottenCopmliments(compliments) {
 			y = lookComplimentsTextYPosition;
 			lookComplimentsTextYPosition += COMPLIMENT_TEXT_Y_DIFF;
 		}
-		drawGottenCompliment(compliments[complimentPosition].text.text, x, y);
+		drawGottenCompliment(compliments[complimentPosition].text.text,
+							 compliments[complimentPosition].color,
+							 x, y);
 	}
 }
 
-function drawGottenCompliment(compliment, x, y) {
+function drawGottenCompliment(compliment, color, x, y) {
 	ctx.font = UI_FONT;
-	ctx.fillStyle = compliment.color;
+	ctx.fillStyle = color;
 	ctx.fillText(compliment, x, y);
+}
+
+function removeOpacity(color) {
+	var opacityPosition = color.lastIndexOf(",");
+	var newColorPart = color.substring(0, opacityPosition + 1);
+	var newColor = newColorPart + "1)";
+	return newColor;
+}
+
+const PROMPT_RECT_COLOR = "#E0E0E0";
+const PROMPT_RECT_X = 200;
+const PROMPT_RECT_Y = 100;
+const PROMPT_RECT_WIDTH = 460;
+const PROMPT_RECT_HEIGHT = 90;
+
+const PROMPT_TEXT_FONT = "16px Arial";
+const PROMPT_TEXT_COLOR = "#000000";
+const PROMPT_TEXT_FIRST_PART = "Ты — синий шарик. Твоя задача — разбить другие шарики.";
+const PROMPT_TEXT_SECOND_PART = "Перемещайся стрелками, а стреляй мышкой. Мяу ;)";
+const PROMPT_X = PROMPT_RECT_X + 10;
+const PROMPT_Y = PROMPT_RECT_Y + 40;
+
+function drawPrompt() {
+	drawPromptRect();
+	drawPromptText();
+}
+
+function drawPromptRect() {
+	ctx.beginPath();
+	ctx.rect(PROMPT_RECT_X, PROMPT_RECT_Y, PROMPT_RECT_WIDTH, PROMPT_RECT_HEIGHT);
+	ctx.fillStyle = PROMPT_RECT_COLOR;
+	ctx.fill();
+	ctx.closePath();
+}
+
+function drawPromptText() {
+	ctx.font = PROMPT_TEXT_FONT;
+	ctx.fillStyle = PROMPT_TEXT_COLOR;
+	ctx.fillText(PROMPT_TEXT_FIRST_PART, PROMPT_X, PROMPT_Y);
+	ctx.fillText(PROMPT_TEXT_SECOND_PART, PROMPT_X, PROMPT_Y + 20);
+}
+
+const BUTTON_WIDTH = 140;
+const BUTTON_HEGIHT = 60;
+const BUTTON_X = (canvas.width - BUTTON_WIDTH) / 2;
+const BUTTON_Y = (canvas.height - BUTTON_HEGIHT) / 2;
+const BUTTON_COLOR = "#9B26AF";
+
+const BUTTON_TEXT_FONT = "16px Arial";
+const BUTTON_TEXT_COLOR = "#FFFFFF";
+const BUTTON_TEXT_X = BUTTON_X + 40;
+const BUTTON_TEXT_Y = BUTTON_Y + 35;
+
+function drawButton(text) {
+	ctx.beginPath();
+	ctx.rect(BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEGIHT);
+	ctx.fillStyle = BUTTON_COLOR;
+	ctx.fill();
+	ctx.closePath();
+	drawButtonText(text);
+}
+
+function drawButtonText(text) {
+	ctx.font = BUTTON_TEXT_FONT;
+	ctx.fillStyle = BUTTON_TEXT_COLOR;
+	ctx.fillText(text, BUTTON_TEXT_X, BUTTON_TEXT_Y);
 }
 
 draw();

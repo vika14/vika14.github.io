@@ -160,7 +160,7 @@ function getComplimentWithoutZeroOpacity(compliment) {
 		color: removeOpacity(compliment.color),
 		xPosition: compliment.xPosition,
 		yPosition: compliment.yPosition,
-		opacity: 1,
+		opacity: 0,
 		type: compliment.type
 	}
 }
@@ -666,7 +666,10 @@ function clickListener(e) {
 			setTimeout(startAttacking, DELAY_FIRST_ATTACK);
 		}
 	} else {
-
+		var mousePosition = getMousePosition(e);
+		if (isButtonPressed(mousePosition)) {
+			document.location.reload();
+		}
 	}
 }
 
@@ -756,12 +759,19 @@ function draw() {
 		moveAllBullets(bullets);
 		removeNeededBullets(bullets);
 	} else if (isGameNotStarted) {
-		drawPrompt();
+		drawPrompt(PROMPT_RECT_X, PROMPT_RECT_Y,
+				   PROMPT_RECT_WIDTH, PROMPT_RECT_HEIGHT,
+				   PROMPT_TEXT_FIRST_PART, PROMPT_TEXT_SECOND_PART);
 		drawButton(START_TEXT);
 	} else {
 		notifyGameOver();
 		if (playerHealth > 0) {
 			showCompliments(gottenCompliments);
+		} else {
+			drawPrompt(PROMPT_RECT_X, PROMPT_RECT_Y,
+				   PROMPT_RECT_WIDTH, PROMPT_RECT_HEIGHT,
+				   PROMPT_DEFEAT_TEXT_FIRST_PART, PROMPT_DEFEAT_TEXT_SECOND_PART);
+			drawButton(RESTART_TEXT);
 		}
 	}
 
@@ -789,7 +799,7 @@ const SCORE_X_POSITION = canvas.width - 120;
 const SCORE_Y_POSITION = 20;
 
 const WIN_TEXT = "Победа";
-const DEFEAT_TEXT = "Поражение";
+const DEFEAT_TEXT = "Не получилось";
 
 const GAME_OVER_TEXT_X_POSIION = canvas.width - canvas.width / 2;
 const GAME_OVER_TEXT_Y_POSITION = 50;
@@ -827,18 +837,21 @@ function drawScore() {
 
 function notifyGameOver() {
 	var text;
+	var x = GAME_OVER_TEXT_X_POSIION
+	var y = GAME_OVER_TEXT_Y_POSITION;
 	if (playerHealth > 0) {
 		text = WIN_TEXT;
 	} else {
 		text = DEFEAT_TEXT;
+		x -= 100;
 	}
-	drawGameOverText(text);
+	drawGameOverText(text, x, y);
 }
 
-function drawGameOverText(text) {
+function drawGameOverText(text, x, y) {
 	ctx.font = COMPLIMENTS_TITLE_FONT;
 	ctx.fillStyle = UI_COLOR;
-	ctx.fillText(text, GAME_OVER_TEXT_X_POSIION, GAME_OVER_TEXT_Y_POSITION);
+	ctx.fillText(text, x, y);
 }
 
 function showCompliments(compliments) {
@@ -875,6 +888,13 @@ function drawGottenCopmliments(compliments) {
 		drawGottenCompliment(compliments[complimentPosition].text.text,
 							 compliments[complimentPosition].color,
 							 x, y);
+		if (compliments[complimentPosition].opacity < 1) {
+			var newOpacity =  compliments[complimentPosition].opacity + 0.01;
+			var newColor = buildColor(compliments[complimentPosition].color,
+									  compliments[complimentPosition].opacity);
+			compliments[complimentPosition].color = newColor;
+			compliments[complimentPosition].opacity = newOpacity;
+		}
 	}
 }
 
@@ -887,7 +907,14 @@ function drawGottenCompliment(compliment, color, x, y) {
 function removeOpacity(color) {
 	var opacityPosition = color.lastIndexOf(",");
 	var newColorPart = color.substring(0, opacityPosition + 1);
-	var newColor = newColorPart + "1)";
+	var newColor = newColorPart + "0)";
+	return newColor;
+}
+
+function buildColor(color, opacity) {
+	var opacityPosition = color.lastIndexOf(",");
+	var newColorPart = color.substring(0, opacityPosition + 1);
+	var newColor = newColorPart + opacity.toString() + ")";
 	return newColor;
 }
 
@@ -901,27 +928,29 @@ const PROMPT_TEXT_FONT = "16px Arial";
 const PROMPT_TEXT_COLOR = "#000000";
 const PROMPT_TEXT_FIRST_PART = "Ты — синий шарик. Твоя задача — разбить другие шарики.";
 const PROMPT_TEXT_SECOND_PART = "Перемещайся стрелками, а стреляй мышкой. Мяу ;)";
+const PROMPT_DEFEAT_TEXT_FIRST_PART = "Ну и ладно. Всё равно ты самая самая. :)";
+const PROMPT_DEFEAT_TEXT_SECOND_PART = "Попробуй ещё раз. :D ";
 const PROMPT_X = PROMPT_RECT_X + 10;
 const PROMPT_Y = PROMPT_RECT_Y + 40;
 
-function drawPrompt() {
-	drawPromptRect();
-	drawPromptText();
+function drawPrompt(x, y, width, height, textFirstPart, textSecondPart) {
+	drawPromptRect(x, y, width, height);
+	drawPromptText(PROMPT_X, PROMPT_Y, textFirstPart, textSecondPart);
 }
 
-function drawPromptRect() {
+function drawPromptRect(x, y, width, height) {
 	ctx.beginPath();
-	ctx.rect(PROMPT_RECT_X, PROMPT_RECT_Y, PROMPT_RECT_WIDTH, PROMPT_RECT_HEIGHT);
+	ctx.rect(x, y, width, height);
 	ctx.fillStyle = PROMPT_RECT_COLOR;
 	ctx.fill();
 	ctx.closePath();
 }
 
-function drawPromptText() {
+function drawPromptText(x, y, firstPart, secondPart) {
 	ctx.font = PROMPT_TEXT_FONT;
 	ctx.fillStyle = PROMPT_TEXT_COLOR;
-	ctx.fillText(PROMPT_TEXT_FIRST_PART, PROMPT_X, PROMPT_Y);
-	ctx.fillText(PROMPT_TEXT_SECOND_PART, PROMPT_X, PROMPT_Y + 20);
+	ctx.fillText(firstPart, x, y);
+	ctx.fillText(secondPart, x, y + 20);
 }
 
 const BUTTON_WIDTH = 140;

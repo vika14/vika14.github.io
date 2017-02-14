@@ -5,18 +5,21 @@ var generalCompliments = [
 	"красивая", "милая", "сладкая",
 	"вкусная", "умная", "сексуальная",
 	"горячая", "хорошая", "заботливая",
-	"понимающая", "чудесная", "волшебная"
+	"понимающая", "чудесная", "волшебная",
+	"добрая", "весёлая", "мяушная",
+	"интересная", "заводная", "страстная"
 ];
 var lookCompliments = [
 	"красивые глаза", "прекрасные губы", "замечательные волосы",
 	"великолепные брови", "завораживающая шея", "нежные руки", 
+	"приятные массажики", "смешные щекотки", "милый храпик"
 ];
 var complimentsForDraw = [];
 var gottenCompliments = [];
 
-const IN_GAME_GENERAL_COMPLIMENTS_NUMBER = 4;
-const IN_GAME_LOOK_COMPLIMENTS_NUMBER = 2;
-const COMPLIMENT_FONT = "16px Arial";
+const IN_GAME_GENERAL_COMPLIMENTS_NUMBER = 6;
+const IN_GAME_LOOK_COMPLIMENTS_NUMBER = 3;
+const COMPLIMENT_FONT = "16px 'Roboto Slab'";
 COMPLIMENT_START_OPACITY = 1;
 const COMPLIMENT_OPACITY_DIFF = 0.025;
 const GENERAL_COMPLIMENT_TYPE = 0;
@@ -214,7 +217,7 @@ function drawPlayer() {
 //Enemy START
 const ENEMIES_NUMBER = 4;
 const ENEMIES_ADDITION_SPAWN_TIMES = ALL_COMPLIMENTS_NUMBER - ENEMIES_NUMBER;
-const ENEMY_HEALTH = 2;
+const ENEMY_HEALTH = 3;
 const ENEMIES_START_POSITIONS = [
 	{ xPosition: canvas.width / 4, yPosition: canvas.height / 4 },
 	{ xPosition: canvas.width / 4 * 3, yPosition: canvas.height / 4 },
@@ -235,7 +238,7 @@ const ENEMIES_COLORS = [
 	"#D50000",
 ];
 const ENEMY_BULLET_COLOR = "#6D4C41";
-const ENEMY_BULLET_SPEED = 3;
+const ENEMY_BULLET_SPEED = 2.5;
 const ENEMY_RADIUS = 20;
 const ENEMY_HEALTH_TEXT_X_OFFSET = -4;
 const ENEMY_HEALTH_TEXT_Y_OFFSET = 5;
@@ -787,7 +790,7 @@ function drawGame() {
 	drawAllBullets(bullets);
 }
 
-const UI_FONT = "16px Arial";
+const UI_FONT = "16px 'Roboto Slab'";
 const UI_COLOR = "#0095DD";
 
 const HEALTH_TITLE = "Осталось Вик";
@@ -795,17 +798,17 @@ const HEALTH_X_POSITION = 8;
 const HEALTH_Y_POSITION = 20;
 
 const SCORE_TITLE = "Убито врагов";
-const SCORE_X_POSITION = canvas.width - 120;
+const SCORE_X_POSITION = canvas.width - 140;
 const SCORE_Y_POSITION = 20;
 
 const WIN_TEXT = "Победа";
 const DEFEAT_TEXT = "Не получилось";
 
-const GAME_OVER_TEXT_X_POSIION = canvas.width - canvas.width / 2;
+const GAME_OVER_TEXT_X_POSIION = canvas.width - canvas.width / 2 - 10;
 const GAME_OVER_TEXT_Y_POSITION = 50;
 
-const GENERAL_COMPLIMENTS_TITLE_X_POSITION = 200;
-const LOOK_COMPLIMENTS_TITLE_X_POSITION = 600;
+const GENERAL_COMPLIMENTS_TITLE_X_POSITION = 160;
+const LOOK_COMPLIMENTS_TITLE_X_POSITION = 560;
 const COMPLIMENTS_TITLES_Y_POSITION = 100;
 
 const COMPLIMENT_TEXT_Y_DIFF = 40;
@@ -818,7 +821,7 @@ var LOOK_COMPLIMENTS_Y_START = GENERAL_COMPLIMENTS_Y_START;
 const GENERAL_COMPLIMENTS_TITLE = "Ты самая";
 const LOOK_COMPLIMENTS_TITLE = "У тебя";
 
-const COMPLIMENTS_TITLE_FONT = "26px Arial";
+const COMPLIMENTS_TITLE_FONT = "26px 'Roboto Slab'";
 const COMPLIMENTS_TITLE_COLOR = "#000000";
 
 function drawHealth() {
@@ -841,6 +844,7 @@ function notifyGameOver() {
 	var y = GAME_OVER_TEXT_Y_POSITION;
 	if (playerHealth > 0) {
 		text = WIN_TEXT;
+		x -= 40;
 	} else {
 		text = DEFEAT_TEXT;
 		x -= 100;
@@ -919,12 +923,12 @@ function buildColor(color, opacity) {
 }
 
 const PROMPT_RECT_COLOR = "#E0E0E0";
-const PROMPT_RECT_X = 200;
+const PROMPT_RECT_X = 170;
 const PROMPT_RECT_Y = 100;
-const PROMPT_RECT_WIDTH = 460;
+const PROMPT_RECT_WIDTH = 500;
 const PROMPT_RECT_HEIGHT = 90;
 
-const PROMPT_TEXT_FONT = "16px Arial";
+const PROMPT_TEXT_FONT = "16px 'Roboto Slab'";
 const PROMPT_TEXT_COLOR = "#000000";
 const PROMPT_TEXT_FIRST_PART = "Ты — синий шарик. Твоя задача — разбить другие шарики.";
 const PROMPT_TEXT_SECOND_PART = "Перемещайся стрелками, а стреляй мышкой. Мяу ;)";
@@ -959,7 +963,7 @@ const BUTTON_X = (canvas.width - BUTTON_WIDTH) / 2;
 const BUTTON_Y = (canvas.height - BUTTON_HEGIHT) / 2;
 const BUTTON_COLOR = "#9B26AF";
 
-const BUTTON_TEXT_FONT = "16px Arial";
+const BUTTON_TEXT_FONT = "16px 'Roboto Slab'";
 const BUTTON_TEXT_COLOR = "#FFFFFF";
 const BUTTON_TEXT_X = BUTTON_X + 40;
 const BUTTON_TEXT_Y = BUTTON_Y + 35;

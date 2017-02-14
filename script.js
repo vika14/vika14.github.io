@@ -762,6 +762,7 @@ function draw() {
 		moveAllBullets(bullets);
 		removeNeededBullets(bullets);
 	} else if (isGameNotStarted) {
+		drawLabel(PROMPT_RECT_X + 120, PROMPT_RECT_Y - 40, LABEL_TEXT);
 		drawPrompt(PROMPT_RECT_X, PROMPT_RECT_Y,
 				   PROMPT_RECT_WIDTH, PROMPT_RECT_HEIGHT,
 				   PROMPT_TEXT_FIRST_PART, PROMPT_TEXT_SECOND_PART);
@@ -981,6 +982,15 @@ function drawButtonText(text) {
 	ctx.font = BUTTON_TEXT_FONT;
 	ctx.fillStyle = BUTTON_TEXT_COLOR;
 	ctx.fillText(text, BUTTON_TEXT_X, BUTTON_TEXT_Y);
+}
+
+const LABEL_TEXT = "Вика? Вика! А я — Тимур! :D"
+const LABEL_FONT = "20px 'Roboto Slab'"
+
+function drawLabel(x, y, text) {
+	ctx.font = LABEL_FONT;
+	ctx.fillStyle = UI_COLOR;
+	ctx.fillText(text, x, y);
 }
 
 draw();
